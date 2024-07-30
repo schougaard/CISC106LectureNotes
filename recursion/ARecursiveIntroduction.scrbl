@@ -2,14 +2,23 @@
 
 @title{A Recursive Introduction}
 
+By Allan Schougaard, San Diego Mesa College.
+
+This work is release into the public domain.
+
 This is a gentle introduction to the concept and use of recursion.
 Starting with simple ideas and ending in deeply recursive images.
 
-@margin-note{"In order to understand recursion, you have to understand recursion..."
+@bold{Table of Contents}
+@table-of-contents[]
+
+@margin-note*{"In order to understand recursion, you have to understand recursion..."
              
              @italic{--Anybody who has ever worked with recursion}
 }
-@section{Magic!}
+
+@section{A Magic Superpower}
+@subsection{Magic!}
 
 Consider the following program:
 
@@ -79,7 +88,7 @@ So the elements of creating a recursive function are:
 In practice, you do not have to belive in magic for recursion to work;
 you can work it out by going through all the evaluations.
 
-@section{Seeing Recursion}
+@subsection{Seeing Recursion}
 Let us explore what recursion might look like in pictures.
 What we are going to do is place increasingly smaller pictures on top of each others,
 similar to a Matryoshka or nesting doll; see @url{https://en.wikipedia.org/wiki/Matryoshka_doll}.
@@ -112,12 +121,12 @@ Maybe that does not really look like nesting.
 👉 What if you switch them around: @code{(rotate 15 (overlay ... ...))}?
 
 
-@section{An Example on String}
+@subsection{An Example on String}
 
 Let us use our knowledge of recursion to see how we can solve a problem using a String.
 We would like to make a function that reverses a String, meaning spell a word backwards:
 @codeblock{
-(backwards "Hello") -> "olleH"
+(backwards "He") -> "eH"
 (backwards "Racecar") -> "racecaR"
 }
 
@@ -271,7 +280,8 @@ There were two tricks we used to implement this function:
 
 @section{Recursion on Numbers}
 
-Whole numbers, also known as integers, naturally lends themselves to recursion. (Maybe that is why they call them natural numbers?)
+Whole numbers, also known as integers, naturally lends themselves to recursion.
+(Maybe that is why they are also called natural numbers?)
 
 To help us along us along, here are some templates that we can use for recursion on numbers:
 
@@ -307,7 +317,7 @@ n! = n x (n-1) x (n-2) x ... x 2 x 1
 }
 
 This is a @italic{declarative} definition, or a @italic{what-is} defintion,
-but it does not really tell us how to calculate factorial. What does that even mean?
+but it does not really tell us how to calculate factorial. What does the text even mean?
 
 @codeblock{
 5! = 5 x (5-1) x (5-2) x ... x 2 x 1 = 120 ?
@@ -406,7 +416,7 @@ So:
 After the first year we receive some interest which is added to the balance:
 
 @codeblock{
-ending-balance = starting-balance + starting-balance * interest-rate/100
+ending-balance = starting-balance + starting-balance x interest-rate/100
 }
 
 Let's make that a little easier:
@@ -443,7 +453,9 @@ All in all, we have:
 (define (calculate-end-balance start-balance periods interest-rate)
   (if (= periods 0)
       start-balance
-      (* (calculate-end-balance start-balance (- periods 1) interest-rate) (+ 1 (/ interest-rate 100)))
+      (* (calculate-end-balance start-balance (- periods 1) interest-rate)
+         (+ 1 (/ interest-rate 100))
+      )
   )
 )
 }
@@ -458,88 +470,152 @@ To use recursion with images we have to use different operators than with number
 With numbers we have used + and *, but with images we have to use combinators,
 such as @code{above}, @code{beside}, @code{overlay}, etc.
 
-@subsection{Building a Tower}
-Let us make a tower of a given height, meaning: design a function that given a positive integer, or zero,
-returns a tower with given number of layers.
+@subsection{Modern Art: Recursive Mondrian}
+Piet Mondrian is famous for making abstract paintings with with only rectangles; see:
+@url{https://www.theartlifegallery.com/blog/the-enduring-legacy-of-piet-mondrians-abstract-paintings/} and
+@url{https://shop.tate.org.uk/piet-mondrian-no.-vi-composition-no.ii/piemon005.html}.
 
-Some immediate observations:
-@itemlist[#:style 'unordered
-          @item{If the given integer is zero, return an empty image.}
-          @item{If the given integer is one, return a square of size 10}
-          @item{If the given integer is two, return a square of size 10 place on top center of rectangle of height 10 and length 30}
-]
+We are going to make something similar by recursively placing rectangles beside and above/below each other.
 
-We will implement one bullet point at a time. Starting with the first:
+First we need a function that can give us the colors we want to work with based on a number,
+so that we can color the rectangles differently as we move through the iterations:
+
 @codeblock{
-(require 2htdp/image)
-
-(define (tower numb)
+(define (get-color numb)
   (cond
-    ((= numb 0) (square 0 "solid" "black"))
-    ((...) ...)
-    (else ...)
+    ((= 0 numb) "blue")
+    ((= 1 numb) "red")
+    ((= 2 numb) "yellow")
+    (else "white")
   )
 )
 }
 
-@code{(tower 0)} now works, not that it does very much. The second bullet point can be implemented with:
+Then we need a function that can create the building blocks of the picture:
+
 @codeblock{
-(define (tower numb)
-  (cond
-    ((= numb 0) (square 0 "solid" "red"))
-    ((= numb 1) (square 10 "solid" "green"))
-    (else ...)
-  )
+(define border-width 5)
+
+(define (mondrian-box width height)
+  (overlay
+   (rectangle (- width border-width) (- height border-width) "solid" (get-color (random 4)))
+   (rectangle width height "solid" "black") ; black frame
+   )
 )
 }
 
-👉 Run @code{(tower 1)}. Do you see a green square? Do you see a red square? Why/why not?
-
-In the recursive case, we have to decide how to combine the images.
-"On top of" could be either @code{above} or @code{below}, but not @code{overlay}. So a template could be:
-@codeblock{
-     (above ... ; the rest of the tower
-            ... ; the bottom of the tower
-     )
-}
-
-The rest of the tower is a tower that is one step smaller than the tower we are constructing,
-using a leap-of-faith:
-@codeblock{
-            (tower (- numb 1))                           ; the rest of the tower
-}
-
-and the bottom of the tower is a rectangle of length corresponding the the given size and a height of 10:
-@codeblock{
-            (rectangle (* 10 numb) 10 "outline" "black") ; the bottom of the tower
-}
-
-Putting it all togther, we have:
-@codeblock{
-     (above (tower (- numb 1))                          ; the rest of the tower
-            (rectangle (* 10 numb) 10 "outline" "black"); the bottom of the tower
-     )
-}
-
-All in all we have:
+The idea we are going to use is that we will start with a rectangle of given dimensions and
+subdivide it a given number of times. Here is a template:
 
 @codeblock{
-(define (tower numb)
+(define (mondrian iterations width height)
   (cond
-    ((= numb 0) (square 0 "solid" "red"))
-    ((= numb 1) (square 10 "solid" "green"))
+    ((<= iterations 0) (mondrian-box width height))
     (else
-     (above (tower (- numb 1))
-            (rectangle (* 10 numb) 10 "outline" "black")
-     )
+      (beside (mondrian ... ... ...)
+              (mondrian ... ... ...)
+      )
     )
   )
 )
 }
 
-👉 Try it with say 50 as input. Can you tell when base cases are used?
+Since we are placing mondrians next to each other, we can halve the width of each to fit into
+the original dimensions:
 
-@subsubsection{The Face of a Clock}
+@codeblock{
+(define (mondrian iterations width height)
+  (cond
+    ((<= iterations 0) (mondrian-box width height))
+    (else
+      (beside (mondrian (- iterations 1) (/ width 2) height)
+              (mondrian (- iterations 1) (/ width 2) height)
+      )
+    )
+  )
+)
+}
+
+👉 Try: @code{(mondrian 3 300 300)} and @code{(mondrian 5 300 300)}
+
+We are not quite there, somehow we have to subdivide horizontally some of the time.
+We can use the @code{random} function for that:
+
+@codeblock{
+(define (mondrian iterations width height)
+  (cond
+    ((<= iterations 0) (mondrian-box width height))
+    ((= (random) 0)
+     ...
+    )
+    (else
+      (beside (mondrian (- iterations 1) (/ width 2) height)
+              (mondrian (- iterations 1) (/ width 2) height)
+      )
+    )
+  )
+)
+}
+
+To subdivide horizontally we can use @code{above},
+but now we have to decrease the height in order to stay within the given dimensions.
+
+@codeblock{
+(define (mondrian iterations width height)
+  (cond
+    ((<= iterations 0) (mondrian-box width height))
+    ((= (random) 0)
+     ...
+    )
+    (else
+      (beside (mondrian (- iterations 1) (/ width 2) height)
+              (mondrian (- iterations 1) (/ width 2) height)
+      )
+    )
+  )
+)
+}
+
+👉 Try: @code{(mondrian 3 300 300)} and @code{(mondrian 4 300 300)}
+
+If we want to be really artistic the image has to have the Golden ratio:
+
+@codeblock{
+(define golden-ratio (/ (+ 1 (sqrt 5)) 2))
+(mondrian 4 (* golden-ratio 300) 300)        
+}
+
+👉 Run the function many times until you find a picture you like.
+Marvel in it because next time you run the program you will likely get something different.
+
+👉 Try changing the colors.
+
+👉 Try a different subdivision in one or both dimensions.
+
+👉 Try varying the number of iterations in each subdivision, maybe randomly?
+
+Mondrians in the real world:
+
+@image[#:scale 0.1]{img/MondrianWindows.jpg}
+(Creator: Robert Francis. @url{https://www.flickr.com/photos/robertfrancis/398440152})
+
+Scientists create computer program that “paints” the structure of molecules in the style of Piet mondrian.
+(2024, July 15). Trinity College Dublin. 
+@url{https://www.tcd.ie/news_events/articles/2024/scientists-create-computer-program-that-paints-the-structure-of-molecules-in-the-style-of-piet-mondrian}
+
+Computer program ‘paints’ porphyrin structures in the style of famous artist.
+(2024, July 23). Chemistry World.
+@url{https://www.chemistryworld.com/news/computer-program-paints-porphyrin-structures-in-the-style-of-famous-artist/4019839.article}
+
+Mondrian. (2020). KDE Store. @url{https://store.kde.org/p/1350981}
+
+And on the humourus side:
+
+Mondrian painting has been hanging upside down for 75 years. (2022, October 28). the Guardian.
+@url{https://www.theguardian.com/artanddesign/2022/oct/28/mondrian-painting-has-been-hanging-upside-down-for-75-years}
+
+
+@subsection{The Face of a Clock}
 
 We are going to make a clockface.
 That is an image with the numbers 1 through 12 placed around the edge at equidistant points with 12 at the top.
@@ -699,129 +775,7 @@ This is not the intended behavior.)
 👉 To make it into a full snowflake, all have to is to place three Koch curves at 60° angles;
 which is left as an exercise.
 
-@subsection{Modern Art: Recursive Mondrian}
-Piet Mondrian is famous for making abstract paintings with with only rectangles; see:
-@url{https://www.theartlifegallery.com/blog/the-enduring-legacy-of-piet-mondrians-abstract-paintings/} and
-@url{https://shop.tate.org.uk/piet-mondrian-no.-vi-composition-no.ii/piemon005.html}.
 
-We are going to make something similar by recursively placing rectangles beside and above/below each other.
-
-First we need a function that can give us the colors we want to work with based on a number,
-so that we can color the rectangles differently as we move through the iterations:
-
-@codeblock{
-(define (get-color numb)
-  (cond
-    ((= 0 numb) "blue")
-    ((= 1 numb) "red")
-    ((= 2 numb) "yellow")
-    (else "white")
-  )
-)
-}
-
-Then we need a function that can create the building blocks of the picture:
-
-@codeblock{
-(define border-width 5)
-
-(define (mondrian-box width height)
-  (overlay
-   (rectangle (- width border-width) (- height border-width) "solid" (get-color (random 4)))
-   (rectangle width height "solid" "black") ; black frame
-   )
-)
-}
-
-The idea we are going to use is that we will start with a rectangle of given dimensions and
-subdivide it a given number of times. Here is a template:
-
-@codeblock{
-(define (mondrian iterations width height)
-  (cond
-    ((<= iterations 0) (mondrian-box width height))
-    (else
-      (beside (mondrian ... ... ...)
-              (mondrian ... ... ...)
-      )
-    )
-  )
-)
-}
-
-Since we are placing mondrians next to each other, we can halve the width of each to fit into
-the original dimensions:
-
-@codeblock{
-(define (mondrian iterations width height)
-  (cond
-    ((<= iterations 0) (mondrian-box width height))
-    (else
-      (beside (mondrian (- iterations 1) (/ width 2) height)
-              (mondrian (- iterations 1) (/ width 2) height)
-      )
-    )
-  )
-)
-}
-
-👉 Try: @code{(mondrian 3 300 300)} and @code{(mondrian 5 300 300)}
-
-We are not quite there, somehow we have to subdivide horizontally some of the time.
-We can use the @code{random} function for that:
-
-@codeblock{
-(define (mondrian iterations width height)
-  (cond
-    ((<= iterations 0) (mondrian-box width height))
-    ((= (random) 0)
-     ...
-    )
-    (else
-      (beside (mondrian (- iterations 1) (/ width 2) height)
-              (mondrian (- iterations 1) (/ width 2) height)
-      )
-    )
-  )
-)
-}
-
-To subdivide horizontally we can use @code{above},
-but now we have to decrease the height in order to stay within the given dimensions.
-
-@codeblock{
-(define (mondrian iterations width height)
-  (cond
-    ((<= iterations 0) (mondrian-box width height))
-    ((= (random) 0)
-     ...
-    )
-    (else
-      (beside (mondrian (- iterations 1) (/ width 2) height)
-              (mondrian (- iterations 1) (/ width 2) height)
-      )
-    )
-  )
-)
-}
-
-👉 Try: @code{(mondrian 3 300 300)} and @code{(mondrian 4 300 300)}
-
-If we want to be really artistic the image has to have the Golden ratio:
-
-@codeblock{
-(define golden-ratio (/ (+ 1 (sqrt 5)) 2))
-(mondrian 4 (* golden-ratio 300) 300)        
-}
-
-👉 Run the function many times until you find a picture you like.
-Marvel in it because next time you run the program you will likely get something different.
-
-👉 Try changing the colors.
-
-👉 Try a different subdivision in one or both dimensions.
-
-👉 Try varying the number of iterations in each subdivision, maybe randomly?
 
 @subsection{Lindermayer Systems}
 
@@ -962,5 +916,64 @@ https://math.libretexts.org/Bookshelves/Applied_Mathematics/Math_in_Society_(Lip
               )
      )
     )
+)
+}
+
+@subsection{Towers of Hanoi}
+
+Recursion 'Super Power' (in Python) - Computerphile
+https://www.youtube.com/watch?v=8lhxIOAfDss
+
+@codeblock{
+; from position (pole number)
+; to position (pole number)
+(define (move from to)
+  (string-append "Move disc from " from " to " to "; " )
+)
+
+(move "A" "C")
+
+; from position (pole number)
+; to position (pole number)
+; via helper pole
+(define (move-via from helper to)
+  (string-append (move from helper) (move helper to))
+)
+
+(move-via "A" "B" "C")
+
+(define (solve-hanoi number-discs from helper to)
+  (if (zero? number-discs)
+      ""
+      (string-append
+       (solve-hanoi (- number-discs 1) from to helper)
+       ;"; "
+       (move from to)
+       ;"; "
+       (solve-hanoi (- number-discs 1) helper from to)
+      )
+  )
+)
+
+(solve-hanoi 1 "A" "B" "C")
+(solve-hanoi 2 "A" "B" "C")
+(solve-hanoi 3 "A" "B" "C")
+(solve-hanoi 4 "A" "B" "C")
+}
+
+@subsection{Solving Equations}
+
+@codeblock{
+(define (close-enough guess goal)
+  (< (abs (- (sqr guess) goal)) 0.0001)
+)
+
+(close-enough 1.5 3)
+
+(define (calculate-squareroot numb goal)
+  (if (close-enough numb goal)
+      numb
+      (calcualate-squareroot ...)
+  )
 )
 }
