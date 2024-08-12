@@ -11,14 +11,12 @@ Starting with simple ideas and ending in deeply recursive images.
 
 @bold{Table of Contents}
 @table-of-contents[]
-
-@margin-note*{"In order to understand recursion, you have to understand recursion..."
+@section{Recursion: A Magic Superpower}
+"In order to understand recursion, you have to understand recursion..."
              
-             @italic{--Anybody who has ever worked with recursion}
-}
+@italic{--Anybody who has ever worked with recursion}
 
-@section{A Magic Superpower}
-@subsection{Magic!}
+@subsection{Magic?}
 
 Consider the following program:
 
@@ -41,9 +39,9 @@ is a call to @code{count-down} itself.
 
 On one hand, why should it be a problem? it is just like any other call to a function.
 On the other hand, how can you use a function to define itself?
-In other academic departments you may have heard that you cannot define a concept in terms of itself.
+In other academic departments you may have heard that "you cannot define a term in terms of itself."
 
-But are we @italic{really}?
+But - are we? @italic{really}?
 
 Let us look a little closer. The call:
 
@@ -80,7 +78,7 @@ In this example, the program stops when the number is 0.
 So the elements of creating a recursive function are:
 
 @itemlist[#:style 'unordered
-          @item{Find a simple case where the recursion can stop.}
+          @item{Find a simple case where the recursion can stop. We call this the base case.}
           @item{State the problem is terms of smaller problems, a strategy known as "divide-and-conquer."}
           @item{Believe that the function works for smaller problems, also known as leap-of-faith.}
          ]
@@ -89,9 +87,12 @@ In practice, you do not have to belive in magic for recursion to work;
 you can work it out by going through all the evaluations.
 
 @subsection{Seeing Recursion}
-Let us explore what recursion might look like in pictures.
+Let us explore what recursion can look like in pictures.
 What we are going to do is place increasingly smaller pictures on top of each others,
 similar to a Matryoshka or nesting doll; see @url{https://en.wikipedia.org/wiki/Matryoshka_doll}.
+
+@image[#:scale 0.5]{img/640px-Floral_matryoshka_set_2_smallest_doll_nested.jpg}
+(BrokenSphere; Wikipidea)
 
 We will start by "nesting" squares:
 @codeblock{
@@ -106,9 +107,9 @@ We will start by "nesting" squares:
 )
 }
 
-👉 What does @code{(nest 5)} produce? Can you tell when the stopping condition executes?
+👉 What does @code{(nest 5)} produce? Can you tell when the base case is evaluated?
 
-Maybe that does not really look like nesting.
+Maybe that does not really look like nesting?
 
 👉 Replace the composition with @code{beside}. Does that look like nesting?
 
@@ -119,162 +120,6 @@ Maybe that does not really look like nesting.
 👉 What happens if you use @code{(overlay (rotate 15 ...) ...)}?
 
 👉 What if you switch them around: @code{(rotate 15 (overlay ... ...))}?
-
-
-@subsection{An Example on String}
-
-Let us use our knowledge of recursion to see how we can solve a problem using a String.
-We would like to make a function that reverses a String, meaning spell a word backwards:
-@codeblock{
-(backwards "He") -> "eH"
-(backwards "Racecar") -> "racecaR"
-}
-
-Let us start by making some observations: What are the simplest examples we can come up with? Well, the shorter the String, the less work we have to do. So:
-@codeblock{
-(backwards "a") -> "a"
-(backwards "z") -> "z"
-}
-
-Can we create somethig shorter? Yes, the "empty String":
-@codeblock{
-(backwards "") -> ""
-}
-
-In all of these cases, the return value is the same as the input value,
-so we do not need to do any processing.
-We can program that directly:
-@codeblock{
-(define (backwards word)
-  word
-)
-}
-
-This only works for String of length 0 or 1.
-When we include the condition for when we can use this simple implementation, we have:
-@codeblock{
-(define (backwards word)
-  (if (<= (string-length word) 1)
-          word
-          ...
-  )
-)
-}
-Let us look at something a little more involved: What if the word has two characters?
-
-@codeblock{
-(backwards "ab") -> "ba"
-}
-
-The observation to make here is that the first letter becomes the last letter,
-and the last letter becomes the first letter.
-We can implement that with:
-
-@codeblock{
-(define (backwards word)
-  (if (<= (string-length word) 1)
-          word
-          (string-append
-              (string-ith word 1) ; last letter
-              (string-ith word 0) ; first letter
-          )
-  )
-)
-}
-
-Now we have to look at longer Strings. Let us look at three letters should give us:
-
-@codeblock{
-(backwards "abc") -> "cba"
-}
-
-It is still true that the first letter becomes the last, and the last letter becomes the first.
-Our current implementation returns:
-
-@codeblock{
-(backwards "abc") -> "ba"
-}
-
-so we are loosing a letter (the last). Let us see if we can get it back:
-
-@codeblock{
-(define (backwards word)
-  (if (<= (string-length word) 1)
-          word
-          (string-append (string-ith word 2) ; last letter
-                         (substring word 0 2); first part of the word
-          )
-  )
-)
-}
-
-which gives us:
-
-@codeblock{
-(backwards "abc") -> "cab"
-}
-
-Let us try that with a four letter word:
-@codeblock{
-(backwards "abcd") -> "cab"
-}
-
-The @code{"d"} is missing,
-and that is because @code{(string-ith word 2)} is not the last letter in @code{"abcd"}.
-The last letter has index @code{(- (string-length word) 1)}; one less that the length because
-the indices start at 0.
-So in our implementation, we replace @code{2} with the index of the last letter:
-@codeblock{
-(define (backwards word)
-  (if (<= (string-length word) 1)
-      word
-      (string-append
-       (string-ith word (- (string-length word) 1))   ; the last letter
-       (substring word 0 (- (string-length word) 1))  ; all the letters before the last
-      )
-  )
-)
-}
-
-which gives us:
-@codeblock{
-(backwards "abcd") -> "dabc"
-}
-
-All the letters are there, but the last letters are in the wrong order.
-
-👉 What order are they in? What order do we want them in?
-
-So all we have to do is reverse the last letters.
-Do we have a function that can reverse letters? We do if we believe we do...
-
-In this example, we can use @code{(backwards "abc")},
-which in general is: @code{(backwards (substring word 0 (- (string-length word) 1)))}
-
-Let us use it on the last letters:
-@codeblock{
-(define (backwards word)
-  (if (<= (string-length word) 1)
-      word
-      (string-append
-       (string-ith word (- (string-length word) 1))               ; the last letter
-       (backwards (substring word 0 (- (string-length word) 1)))  ; reverse the letters before the last
-      )
-  )
-)
-}
-
-👉 And now the function works on Strings of any length; try it for yourself.
-
-There were two tricks we used to implement this function:
-
-@itemlist[#:style 'unordered
-          @item{Find the simplest or smallest examples and use them as starting point.
-           This is known as the @italic{base case} and is used to stop the recursion.}
-          @item{Find a way to break down the problem into smaller problems
-           that we can call on the function to handle and then combine the results to a full solution.
-          This is known as the @italic{recursive case}.}
-]
 
 
 
@@ -336,17 +181,19 @@ Here is an imperative or how-to definition:
 n! = n x (n-1)!, if n>0
 }
 
-Let us calculate 3!:
+Let us calculate 2!:
 
 @codeblock{
-3! = 3 x (3-1)! = 3 x 2! =
-     3 x (2 x (2-1)!) = 3 x 2 x 1! =
-     3 x 2 x (1 x (1 - 1)!) =
-     3 x 2 x 1 x 0! =
-     3 x 2 x 1 x 1 = 6
+2! = 2 x (2-1)! = 2 x 1! =
+     2 x (1 x (1 - 1)!) =
+     2 x 1 x 0! =
+     2 x 1 x 1 = 6
 }
 
-You might have noticed that the how-to definition is recursive? And we can translate it into a Lisp function:
+👉 Can you tell where each of the rules of the definition is being used?
+
+You might have noticed that the how-to definition is recursive?
+And we can translate it into a Lisp function:
 @codeblock{
 (define (factorial numb)
   (if (= 0 numb)
@@ -360,7 +207,8 @@ You might have noticed that the how-to definition is recursive? And we can trans
 
 @subsection{Fibonacci Numbers}
 
-The Fibonacci numbers originates out of trying to calculate how many rabbits come out of a single pair after a given number of generations,
+The Fibonacci numbers originates out of trying to calculate
+how many rabbits come out of a single pair after a given number of generations,
 but is found many places in nature and is related to the golden ratio;
 see @url{https://www.imaginationstationtoledo.org/about/blog/the-fibonacci-sequence} and
 @url{https://www.youtube.com/watch?v=SjSHVDfXHQ4} (they are a little magical).
@@ -372,7 +220,7 @@ fibonacci(1) = 1
 fibonacci(n) = fibonacci(n-1) + fibinacci(n-2) if n>1
 }
 
-The complication is that there are two stopping conditions,
+The complication is that the base case consists of two rules,
 but we have seen something similar in the backwards String example.
 We could do this with nested @code{if}-expressions, but it is easier to use a @code{cond}:
 @codeblock{
@@ -389,8 +237,8 @@ We could do this with nested @code{if}-expressions, but it is easier to use a @c
 
 
 @subsection{Compound Interest}
-Compound interest is what banks use to calculate how much they are going to pay you for borrowing your money,
-or how much you have to pay to borrow their money.
+Compound interest is what banks use to calculate how much they are going to pay you to lend your money,
+or how much you have to pay to lend their money.
 
 Let us look at an example: If you deposit $100 into a bank account at the beginning of a year
 and the account carries a 10% interest rate, then at the end of the year the bank will pay you
@@ -400,7 +248,7 @@ But since we have $110, 10% is now $11, which means that at the end of that year
 And so on. Sometimes this is called "interest on interest."
 See @url{https://www.investopedia.com/terms/c/compoundinterest.asp}.
 
-Let's see how we can use recursion to calculate compound interest:
+Let us see how we can use recursion to calculate compound interest:
 If we have $100 in the account at the beginning of the year, then we have $100 when no periods have passed.
 So:
 
@@ -419,10 +267,10 @@ After the first year we receive some interest which is added to the balance:
 ending-balance = starting-balance + starting-balance x interest-rate/100
 }
 
-Let's make that a little easier:
+Let us make that a little simpler:
 
 @codeblock{
-ending-balance = starting-balance * (1 + interest-rate/100)
+ending-balance = starting-balance x (1 + interest-rate/100)
 }
 
 Translated into Lisp:
@@ -436,7 +284,7 @@ Translated into Lisp:
 )
 }
 
-The only works for the first year.
+This only works for the first year.
 
 Here is the corner-stone of this case:
 The starting balance of a year is the ending balance of the prevous year.
@@ -476,6 +324,9 @@ Piet Mondrian is famous for making abstract paintings with with only rectangles;
 @url{https://shop.tate.org.uk/piet-mondrian-no.-vi-composition-no.ii/piemon005.html}.
 
 We are going to make something similar by recursively placing rectangles beside and above/below each other.
+Eventually we may get something similar to:
+
+@image{img/RecursiveMondrianExample.png}
 
 First we need a function that can give us the colors we want to work with based on a number,
 so that we can color the rectangles differently as we move through the iterations:
@@ -526,7 +377,7 @@ the original dimensions:
 @codeblock{
 (define (mondrian iterations width height)
   (cond
-    ((<= iterations 0) (mondrian-box width height))
+    ((= iterations 0) (mondrian-box width height))
     (else
       (beside (mondrian (- iterations 1) (/ width 2) height)
               (mondrian (- iterations 1) (/ width 2) height)
@@ -544,8 +395,8 @@ We can use the @code{random} function for that:
 @codeblock{
 (define (mondrian iterations width height)
   (cond
-    ((<= iterations 0) (mondrian-box width height))
-    ((= (random) 0)
+    ((= iterations 0) (mondrian-box width height))
+    ((= (random 2) 0)
      ...
     )
     (else
@@ -563,9 +414,11 @@ but now we have to decrease the height in order to stay within the given dimensi
 @codeblock{
 (define (mondrian iterations width height)
   (cond
-    ((<= iterations 0) (mondrian-box width height))
-    ((= (random) 0)
-     ...
+    ((= iterations 0) (mondrian-box width height))
+    ((= (random 2) 0)
+      (above (mondrian (- iterations 1) width (/ height 2))
+             (mondrian (- iterations 1) width (/ height 2))
+      )
     )
     (else
       (beside (mondrian (- iterations 1) (/ width 2) height)
@@ -582,7 +435,7 @@ If we want to be really artistic the image has to have the Golden ratio:
 
 @codeblock{
 (define golden-ratio (/ (+ 1 (sqrt 5)) 2))
-(mondrian 4 (* golden-ratio 300) 300)        
+(mondrian 4 (* golden-ratio 400) 400)        
 }
 
 👉 Run the function many times until you find a picture you like.
@@ -594,10 +447,22 @@ Marvel in it because next time you run the program you will likely get something
 
 👉 Try varying the number of iterations in each subdivision, maybe randomly?
 
-Mondrians in the real world:
+@subsubsection{Mondrians in the Real World}
 
-@image[#:scale 0.1]{img/MondrianWindows.jpg}
+The Mondrian structures are not just abstract art,
+but used in many places in design, architecture, science and math.
+
+Some uses in architecture (possibly):
+
+@image[#:scale 0.5]{img/MondrianWindowsCrop.png}
+
 (Creator: Robert Francis. @url{https://www.flickr.com/photos/robertfrancis/398440152})
+
+@image[#:scale 0.5]{img/AlbertslundWindowsCrop.png}
+
+(Creator: Allan Schougaard. Public domain.)
+
+Some uses in chemistry:
 
 Scientists create computer program that “paints” the structure of molecules in the style of Piet mondrian.
 (2024, July 15). Trinity College Dublin. 
@@ -607,9 +472,11 @@ Computer program ‘paints’ porphyrin structures in the style of famous artist
 (2024, July 23). Chemistry World.
 @url{https://www.chemistryworld.com/news/computer-program-paints-porphyrin-structures-in-the-style-of-famous-artist/4019839.article}
 
+How about a Mondrian inspired theme for your computer:
+
 Mondrian. (2020). KDE Store. @url{https://store.kde.org/p/1350981}
 
-And on the humourus side:
+And on the humorous side:
 
 Mondrian painting has been hanging upside down for 75 years. (2022, October 28). the Guardian.
 @url{https://www.theguardian.com/artanddesign/2022/oct/28/mondrian-painting-has-been-hanging-upside-down-for-75-years}
@@ -622,7 +489,7 @@ That is an image with the numbers 1 through 12 placed around the edge at equidis
 
 Let us start with creating the background on which the number are place. A nice circle should do:
 @codeblock{
-(define background (circle 200 "outline" "black"))
+(define background (circle 200 "outline" "gray"))
 }
 
 We can take a hint from the description and find out how to place "12" at the top.
@@ -718,7 +585,7 @@ The squares are composed with:
 )
 }
 
-and is left as an exercise.
+👉 Create a Sierpinski carpet. Do you recognize from somewhere you have been?
 
 @subsection{Koch Snowflake}
 The Koch Snowflake is a fractal that starts out as a triangle and the more and more "bumps" are added to each side.
@@ -771,10 +638,6 @@ but it has to align with the bottom. So we have:
 👉 Try: @code{(koch-curve 200 1)}, @code{(koch-curve 200 2)}, @code{(koch-curve 200 3)}, @code{(koch-curve 200 4)}, @code{(koch-curve 200 7)} 
 (Note: Due the way @code{beside} works, the length of each side increases by a few pixes for each iteration.
 This is not the intended behavior.)
-
-👉 To make it into a full snowflake, all have to is to place three Koch curves at 60° angles;
-which is left as an exercise.
-
 
 
 @subsection{Lindermayer Systems}
@@ -853,7 +716,7 @@ Next we turn the scaled trunks into full trees on their own by using recursion:
 do not be surprised if the tree falls completely apart,
 finding the right parameters is part of the process.
 
-If we want green leaves, we can use:
+To have green leaves, we can use:
 @codeblock{
 (define leaf (circle 15 "solid" "green"))
 
@@ -871,6 +734,313 @@ If we want green leaves, we can use:
 )
 }
 
+@section{Advanced Problem-Solving}
+
+@subsection{An Example on String}
+
+Let us use our knowledge of recursion to see how we can solve a problem using a String.
+We would like to make a function that reverses a String, meaning spell a word backwards:
+@codeblock{
+(backwards "He") -> "eH"
+(backwards "Racecar") -> "racecaR"
+}
+
+Let us start by making some observations: What are the simplest examples we can come up with? Well, the shorter the String, the less work we have to do. So:
+@codeblock{
+(backwards "a") -> "a"
+(backwards "z") -> "z"
+}
+
+Can we create somethig shorter? Yes, the "empty String":
+@codeblock{
+(backwards "") -> ""
+}
+
+In all of these cases, the return value is the same as the input value,
+so we do not need to do any processing.
+We can program that directly:
+@codeblock{
+(define (backwards word)
+  word
+)
+}
+
+This only works for String of length 0 or 1.
+When we include the condition for when we can use this simple implementation, we have:
+@codeblock{
+(define (backwards word)
+  (if (<= (string-length word) 1)
+          word
+          ...
+  )
+)
+}
+Let us look at something a little more involved: What if the word has two characters?
+
+@codeblock{
+(backwards "ab") -> "ba"
+}
+
+The observation to make here is that the first letter becomes the last letter,
+and the last letter becomes the first letter.
+We can implement that with:
+
+@codeblock{
+(define (backwards word)
+  (if (<= (string-length word) 1)
+          word
+          (string-append
+              (string-ith word 1) ; last letter
+              (string-ith word 0) ; first letter
+          )
+  )
+)
+}
+
+Now we have to look at longer Strings. Let us look at three letters:
+
+@codeblock{
+(backwards "abc") -> "cba"
+}
+
+It is still true that the first letter becomes the last, and the last letter becomes the first.
+Our current implementation returns:
+
+@codeblock{
+(backwards "abc") -> "ba"
+}
+
+so we are loosing a letter (the last). Let us see if we can get it back:
+
+@codeblock{
+(define (backwards word)
+  (if (<= (string-length word) 1)
+          word
+          (string-append (string-ith word 2) ; last letter
+                         (substring word 0 2); first part of the word
+          )
+  )
+)
+}
+
+which gives us:
+
+@codeblock{
+(backwards "abc") -> "cab"
+}
+
+Let us try that with a four letter word:
+@codeblock{
+(backwards "abcd") -> "cab"
+}
+
+The @code{"d"} is missing,
+and that is because @code{(string-ith word 2)} is not the last letter in @code{"abcd"}.
+The last letter has index @code{(- (string-length word) 1)}; one less that the length because
+the indices start at 0.
+So in our implementation, we replace @code{2} with the index of the last letter:
+@codeblock{
+(define (backwards word)
+  (if (<= (string-length word) 1)
+      word
+      (string-append
+       (string-ith word (- (string-length word) 1))   ; the last letter
+       (substring word 0 (- (string-length word) 1))  ; all the letters before the last
+      )
+  )
+)
+}
+
+which gives us:
+@codeblock{
+(backwards "abcd") -> "dabc"
+}
+
+All the letters are there, but the last letters are in the wrong order.
+
+👉 What order are they in? What order do we want them in?
+
+So all we have to do is reverse the last letters.
+Do we have a function that can reverse letters? We do if we believe we do...
+
+In this example, we can use @code{(backwards "abc")},
+which in general is: @code{(backwards (substring word 0 (- (string-length word) 1)))}
+
+Let us use it on the last letters:
+@codeblock{
+(define (backwards word)
+  (if (<= (string-length word) 1)
+      word
+      (string-append
+       (string-ith word (- (string-length word) 1))               ; the last letter
+       (backwards (substring word 0 (- (string-length word) 1)))  ; reverse the letters before the last
+      )
+  )
+)
+}
+
+👉 And now the function works on Strings of any length; try it for yourself.
+
+There were two tricks we used to implement this function:
+
+@itemlist[#:style 'unordered
+          @item{Find the simplest or smallest examples and use them as starting point.
+           This is known as the @italic{base case} and is used to stop the recursion.}
+          @item{Find a way to break down the problem into smaller problems
+           that we can call on the function to handle and then combine the results to a full solution.
+          This is known as the @italic{recursive case}.}
+]
+
+
+
+@subsection{The Towers of Hanoi}
+In this section we are going to look at a problem is that very difficult solve to without recursion,
+but easy to solve with recursion.
+At the end I hope that you will see that recusion really is a kind of magic superpower.
+
+The problem we are going to look at is called the Towers of Hanoi:
+
+The tower of Hanoi (also called the tower of Brahma or the Lucas tower)
+was invented by a French mathematician Édouard Lucas in the 19th century.
+It is associated with a legend of a Hindu temple where the puzzle was supposedly
+used to increase the mental discipline of young priests.
+In the legend the young priests were given 64 gold disks stacked neatly on one of three posts.
+Each disk rested on a slightly larger disk.
+The priests' goal was to re-create the stack on a different post by moving disks, one at a time,
+to another post with the rule that a larger disk could never be placed on top of a smaller disk. 
+(Science Buddies, Sabine De Brabandere. (2017, October 26). The Tower of Hanoi. Scientific American.
+@url{https://www.scientificamerican.com/article/the-tower-of-hanoi})
+
+There are four rules for moving the discs:
+@itemlist[#:style 'unordered
+          @item{Discs are moved one at a time.}
+          @item{A disc can only be moved from the top of a pile.}
+          @item{Any disc that can be moved, can be placed on an empty peg.}
+          @item{Only a smaller disc can be placed on top of a bigger disc.}
+         ]
+
+👉 Start with one disc, can you solve how to move the disc to another peg?
+
+Too easy? Go on...
+
+👉 With two discs, can you solve how to move the pile to another peg?
+
+👉 With three discs, can you solve how to move the pile to another peg?
+
+For musical introduction see:
+Numberphile. (2021, October 27). Key to the Tower of Hanoi - Numberphile [Video]. YouTube.
+@url{https://www.youtube.com/watch?v=PGuRmqpr6Oo}.
+
+For an animated introduction see:
+Reducible. (2020, May 26). Towers of Hanoi: A Complete Recursive Visualization [Video]. YouTube.
+@url{https://www.youtube.com/watch?v=rf6uf3jNjbo}
+
+For a Khan introduction see:
+Towers of Hanoi. (n.d.). Khan Academy.
+@url{https://www.khanacademy.org/computing/computer-science/algorithms/towers-of-hanoi/a/towers-of-hanoi}
+
+For a mathematical introduction see:
+3Blue1Brown. (2016, November 25). Binary, Hanoi and Sierpinski, part 1 [Video]. YouTube.
+@url{https://www.youtube.com/watch?v=2SUvWfNJSsM}
+
+We are going to write a program that can move a pile of discs from one peg to another.
+The program will tell us the moves we have to make in order to move a pile of discs
+from one peg to another. We are going to call the pegs left to right: "A", "B", "C".
+
+Let us start by solving the simplest problem we can:
+Moving one disc from one peg to an empty peg or a peg with bigger discs.
+All the program has to do is return the "move" instruction:
+
+@codeblock{
+; Purpose: Move one disc from one named peg to an empty named peg or a peg with bigger discs.
+; So given the name of a peg and the name of an empty peg, create the instruction to move
+; from the former peg to the latter peg.
+; Signature: String String -> String
+; Examples
+; (move "A" "B") -> "Move a disc from A to B;"
+; (move "A" "C") -> "Move a disc from A to B;"
+(define (move from to)
+  (string-append "Move a disc from " from " to " to "; " )
+)
+}
+
+Now, what about two discs?
+We have to first move one disc to another peg and then move a second disc to the destination peg,
+and then finally move the first disc onto the destination disc.
+So to solve this situation we need a source pig, and a destination peg, but also a helper peg.
+
+@codeblock{
+; Purpose: Move two disc from one named peg to an empty named peg or a peg with bigger discs.
+; So given the name of a peg and the name of an empty peg, create the instructions to move
+; from the former peg to the latter peg using a helper peg.
+; Signature: String String String -> String
+; Examples
+; (move-two "A" "B" "C") -> "Move disc from A to B; Move disc from A to C; Move disc from B to C;"
+(define (move-two from helper to)
+  (string-append (move from helper) (move from to) (move helper to))
+)
+}
+
+How can we now solve the general problem: given the size of a pile on a peg,
+how can we move the discs to a destination peg, using a another peg on the way?
+
+Let us start with the a simple case: if the pile only has one disc we can use @code{move}.
+
+👉 There is actually a simpler case. Can you see what it is? (hint: simpler means smaller)
+
+So we can start with a template, using recursion on the number of discs that have to be moved:
+
+@codeblock{
+(define (solve-hanoi number-discs from helper to)
+  (if (= number-discs 1)
+      (move from to)
+      ...
+  )
+)
+}
+
+From your work with three discs, you might have noticed a pattern that the discs have to move in:
+First we get @code{n-1} (smaller) discs out of the way, then we move the @code{n}th disc to the final destination,
+and then we finally move the first @code{n-1} (smaller) discs to the destination.
+
+To recap that in a more algorithmic way:
+@itemlist[#:style 'ordered
+          @item{Move @code{n-1} discs from the source to the helper peg.}
+          @item{Move a disc from the source to the destination peg (directly).}
+          @item{Move @code{n-1} discs from the helper to the destination peg.}
+         ]
+
+This we can directly translate into Lisp:
+
+@codeblock{
+(define (solve-hanoi number-discs from helper to)
+  (if (= number-discs 1)
+      ; base case
+      (move from to)
+      ; recursive case
+      (string-append       
+       (solve-hanoi (- number-discs 1) from to helper)
+       (move from to)
+       (solve-hanoi (- number-discs 1) helper from to)
+      )
+  )
+)
+}
+
+👉 What does: @code{(solve-hanoi 1 "A" "B" "C")} tell you to do?
+
+👉 What does: @code{(solve-hanoi 2 "A" "B" "C")} tell you to do?
+
+👉 What does: @code{(solve-hanoi 4 "A" "B" "C")} tell you to do? Is it correct?
+Check by carrying out the instructions manually.
+
+👉 Can you simplify the function by using @code{(zero? number-discs)}?
+What else has to change?
+
+
+(Inspired by:
+Computerphile. (2019, October 1). Recursion 'Super Power' (in Python) - Computerphile [Video]. YouTube.
+@url{https://www.youtube.com/watch?v=8lhxIOAfDss})
 
 @section{References}
 
@@ -894,13 +1064,14 @@ Ho, N. (2023, January 1). An approach to sound synthesis with L-systems. Nathan 
 Heap, D. (2012, June 8). racket recursion video 1/6 --- triangle recursion [Video]. YouTube.
 @url{https://www.youtube.com/watch?v=gZAXE1GWSF0}
 
-@section{Appendix 1: Other Great Ideas}
+@section{Appendix A: Other Great Ideas}
 
 @subsection{Logistic Growth}
-https://en.wikipedia.org/wiki/Logistic_function
-https://math.libretexts.org/Bookshelves/Applied_Mathematics/Math_in_Society_(Lippman)/08%3A_Growth_Models/8.06%3A_Logistic_Growth
+@url{https://en.wikipedia.org/wiki/Logistic_function}
+@url{https://math.libretexts.org/Bookshelves/Applied_Mathematics/Math_in_Society_(Lippman)/08%3A_Growth_Models/8.06%3A_Logistic_Growth}
 
 @subsection{Advanced Mondrian}
+
 @codeblock{
 (define (mondrian numb width height)
   (cond
@@ -919,61 +1090,25 @@ https://math.libretexts.org/Bookshelves/Applied_Mathematics/Math_in_Society_(Lip
 )
 }
 
-@subsection{Towers of Hanoi}
-
-Recursion 'Super Power' (in Python) - Computerphile
-https://www.youtube.com/watch?v=8lhxIOAfDss
-
 @codeblock{
-; from position (pole number)
-; to position (pole number)
-(define (move from to)
-  (string-append "Move disc from " from " to " to "; " )
-)
-
-(move "A" "C")
-
-; from position (pole number)
-; to position (pole number)
-; via helper pole
-(define (move-via from helper to)
-  (string-append (move from helper) (move helper to))
-)
-
-(move-via "A" "B" "C")
-
-(define (solve-hanoi number-discs from helper to)
-  (if (zero? number-discs)
-      ""
-      (string-append
-       (solve-hanoi (- number-discs 1) from to helper)
-       ;"; "
-       (move from to)
-       ;"; "
-       (solve-hanoi (- number-discs 1) helper from to)
+(define golden-ratio (/ (+ 1 (sqrt 5)) 2))
+(define (mondrian iterations width height)
+  (cond
+    ((= iterations 0) (mondrian-box width height))
+    ((= (random 2) 0)
+      (above (mondrian (- iterations 1) width (* height (/ 1 golden-ratio)))
+             (mondrian (- iterations 1) width (* height (- 1 (/ 1 golden-ratio))))
       )
-  )
-)
-
-(solve-hanoi 1 "A" "B" "C")
-(solve-hanoi 2 "A" "B" "C")
-(solve-hanoi 3 "A" "B" "C")
-(solve-hanoi 4 "A" "B" "C")
-}
-
-@subsection{Solving Equations}
-
-@codeblock{
-(define (close-enough guess goal)
-  (< (abs (- (sqr guess) goal)) 0.0001)
-)
-
-(close-enough 1.5 3)
-
-(define (calculate-squareroot numb goal)
-  (if (close-enough numb goal)
-      numb
-      (calcualate-squareroot ...)
+    )
+    (else
+      (beside (mondrian (- iterations 1) (* width (/ 1 golden-ratio)) height)
+              (mondrian (- iterations 1) (* width (- 1 (/ 1 golden-ratio))) height)
+      )
+    )
   )
 )
 }
+
+@subsection{The Collatz Conjecture}
+Wikipedia contributors. (2024, July 28). Collatz conjecture. In Wikipedia, The Free Encyclopedia.
+Retrieved 18:24, August 12, 2024, from @url{https://en.wikipedia.org/w/index.php?title=Collatz_conjecture&oldid=1237098889}
