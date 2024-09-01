@@ -16,6 +16,33 @@ Starting with simple ideas and ending in deeply recursive images.
              
 @italic{--Anybody who has ever worked with recursion}
 
+You can begin to understand the concept of recursion by using the example of walking up stairs:
+Suppose you are taking a staircase from the ground floor.
+So you take steps one by one to go up, starting with taking the first step (literally).
+You can reach the second step only when you have have taken the first step.
+Similarly, to reach the third step, you have to get to the second step first, which requires you to take the first step.
+With each next step, you are adding previous steps as a repeated sequence with a common difference between each step.
+Put differently:
+
+A step + ground floor ↦ Step 1
+
+A step + Step 1 ↦ Step 2
+
+A step + Step 2 ↦ Step 3
+
+And so on:
+
+A step + Step n ↦ Step n+1
+
+So if we want to get to Step 4 all we have to do is take a step up from Step 4-1 = Step 3.
+How do you get to Step 3? Just take a step up from Step 3-1 = Step 2. And so on.
+
+This is the basic idea of a recursive process.
+
+(Inspired by: Recursive function. (2019, February 12). BYJUS.
+@url{https://byjus.com/maths/recursive-function}.)
+
+
 @subsection{Magic?}
 
 Consider the following program:
@@ -220,8 +247,7 @@ fibonacci(1) = 1
 fibonacci(n) = fibonacci(n-1) + fibinacci(n-2) if n>1
 }
 
-The complication is that the base case consists of two rules,
-but we have seen something similar in the backwards String example.
+The complication is that the base case consists of two rules.
 We could do this with nested @code{if}-expressions, but it is easier to use a @code{cond}:
 @codeblock{
 (define (fibonacci numb)
@@ -454,11 +480,15 @@ but used in many places in design, architecture, science and math.
 
 Some uses in architecture (possibly):
 
-@image[#:scale 0.5]{img/MondrianWindowsCrop.png}
+@image[#:scale 0.33]{img/MondrianWindowsCrop.png}
 
 (Creator: Robert Francis. @url{https://www.flickr.com/photos/robertfrancis/398440152})
 
-@image[#:scale 0.5]{img/AlbertslundWindowsCrop.png}
+@image[#:scale 0.25]{img/MondrianMesa.png}
+
+(Source: @url{https://myportal.sdccd.edu)})
+
+@image[#:scale 0.25]{img/AlbertslundWindowsCrop.png}
 
 (Creator: Allan Schougaard. Public domain.)
 
@@ -1044,25 +1074,28 @@ Computerphile. (2019, October 1). Recursion 'Super Power' (in Python) - Computer
 
 @section{References}
 
-H A., Sussman, G. J., & Sussman, J. (2007). Structure and interpretation of computer programs - 2nd edition. Justin Kelly. 
-
-Olivas, A. (2024). Antoni-ooo/CISC-106-Honors-Project: An honors project I had made for my mesa college introduction to programming class in spring 2024 =). GitHub.
-@url{https://github.com/antoni-ooo/CISC-106-Honors-Project}
-
-Borner, M. (2024, April 8). Lambda screen: Fractals in pure lambda calculus. Text.
-@url{https://text.marvinborner.de/2024-03-25-02.html}
-
 2.2 image guide. (n.d.). Racket Documentation.
 @url{https://docs.racket-lang.org/teachpack/2htdpimage-guide.html}
 
 Beauty and joy of computing. (n.d.). The Beauty and Joy of Computing.
 @url{https://bjc.edc.org/bjc-r/topic/topic.html?topic=nyc_bjc/7-recursion-trees-fractals.topic&course=bjc4nyc.html}
 
-Ho, N. (2023, January 1). An approach to sound synthesis with L-systems. Nathan Ho.
-@url{https://nathan.ho.name/posts/sound-synthesis-with-l-systems/}
+Borner, M. (2024, April 8). Lambda screen: Fractals in pure lambda calculus. Text.
+@url{https://text.marvinborner.de/2024-03-25-02.html}
+
+H A., Sussman, G. J., & Sussman, J. (2007). Structure and interpretation of computer programs - 2nd edition. Justin Kelly. 
 
 Heap, D. (2012, June 8). racket recursion video 1/6 --- triangle recursion [Video]. YouTube.
 @url{https://www.youtube.com/watch?v=gZAXE1GWSF0}
+
+Ho, N. (2023, January 1). An approach to sound synthesis with L-systems. Nathan Ho.
+@url{https://nathan.ho.name/posts/sound-synthesis-with-l-systems/}
+
+Krishnamurthi, S. (n.d.). How not to teach recursion [Video]. Welcome!.
+@url{https://parentheticallyspeaking.org/articles/how-not-to-teach-recursion}
+
+Olivas, A. (2024). Antoni-ooo/CISC-106-Honors-Project: An honors project I had made for my mesa college introduction to programming class in spring 2024 =). GitHub.
+@url{https://github.com/antoni-ooo/CISC-106-Honors-Project}
 
 @section{Appendix A: Other Great Ideas}
 
