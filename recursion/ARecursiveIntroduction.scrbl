@@ -4,7 +4,7 @@
 
 By Allan Schougaard, San Diego Mesa College.
 
-This work is release into the public domain.
+This work is released into the public domain.
 
 This is a gentle introduction to the concept and use of recursion.
 Starting with simple ideas and ending in deeply recursive images.
