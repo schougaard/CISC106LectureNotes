@@ -95,7 +95,7 @@ which evaluates to:
 so what is really happening is that @code{(count-down 10)} is defined in terms of @code{(count-down 9)}
 which is not the same thing.
 
-There is only one issue left: If we keep going then @code{(count-down 10)} is defined in terms of @code{(count-down 9)}
+There is one issue left: If we keep going then @code{(count-down 10)} is defined in terms of @code{(count-down 9)}
 which is defined in terms of @code{(count-down 8)} which is defined in terms of @code{(count-down 7)} which is defined in terms of @code{(count-down 6)}...
 
 The issue is that the recursion (the count down) has to stop at some point, otherwise it will continue forever, and we would have created an infinite loop.
@@ -105,13 +105,15 @@ In this example, the program stops when the number is 0.
 So the elements of creating a recursive function are:
 
 @itemlist[#:style 'unordered
-          @item{Find a simple case where the recursion can stop. We call this the base case.}
-          @item{State the problem is terms of smaller problems, a strategy known as "divide-and-conquer."}
-          @item{Believe that the function works for smaller problems, also known as leap-of-faith.}
+          @item{Find a simple case where the recursion can stop. We call this the @bold{base case}.}
+          @item{State the problem is terms of smaller problems, a strategy known as "divide-and-conquer."
+           In other words, use solutions to one or more smaller problems to @bold{compose} a bigger solution.
+           We call this the @bold{recursive case}.}
+          @item{Believe that the function works for smaller problems - @italic{have a leap-of-faith!}}
          ]
 
 In practice, you do not have to belive in magic for recursion to work;
-you can work it out by going through all the evaluations.
+you can work it out by going through the substitutions yourself.
 
 @subsection{Seeing Recursion}
 Let us explore what recursion can look like in pictures.
@@ -124,7 +126,7 @@ similar to a Matryoshka or nesting doll; see @url{https://en.wikipedia.org/wiki/
 We will start by "nesting" squares:
 @codeblock{
 (define (nest iterations)
-  (if (= iterations 1)
+  (if (= iterations 0)
       (square (* iterations 25) "solid" "orange")
       (above ; composition
        (nest (- iterations 1))
@@ -134,7 +136,7 @@ We will start by "nesting" squares:
 )
 }
 
-👉 What does @code{(nest 5)} produce? Can you tell when the base case is evaluated?
+👉 What does @code{(nest 4)} produce? Can you tell when the base case is evaluated?
 
 Maybe that does not really look like nesting?
 
@@ -153,7 +155,6 @@ Maybe that does not really look like nesting?
 @section{Recursion on Numbers}
 
 Whole numbers, also known as integers, naturally lends themselves to recursion.
-(Maybe that is why they are also called natural numbers?)
 
 To help us along us along, here are some templates that we can use for recursion on numbers:
 
@@ -171,9 +172,10 @@ or:
 @codeblock{
 (define (func numb)
   (cond
-    ((= numb 0) ...)               ; base cases
+    ((= numb 0) ...)                ; base cases
     ((= numb 1) ...)
-    (else (... (func (- numb 1)))) ; recursive case
+    ((...) (... (func (- numb 1)))) ; recursive cases
+    (else  (... (func (- numb 1))))
   )
 )
 }
@@ -185,36 +187,36 @@ see: @url{https://en.wikipedia.org/wiki/Factorial}.
 
 Many of the definitions of factorial look like this:
 @codeblock{
-n! = n x (n-1) x (n-2) x ... x 2 x 1
+n! = n × (n-1) × (n-2) × ... × 2 × 1
 }
 
 This is a @italic{declarative} definition, or a @italic{what-is} defintion,
 but it does not really tell us how to calculate factorial. What does the text even mean?
 
 @codeblock{
-5! = 5 x (5-1) x (5-2) x ... x 2 x 1 = 120 ?
-2! = 2 x (2-1) x (2-2) x ... x 2 x 1 = 0 ?
+5! = 5 × (5-1) × (5-2) × ... × 2 × 1 = 120 ?
+2! = 2 × (2-1) × (2-2) × ... × 2 × 1 = 0 ?
 }
 
 What do the ellipsis actually mean? How am I to interpret this?
 It may be fine for humans (and mathematicians) because we are superb at finding meaning in everything
 (even when there is none).
-But for a computer we need another kind of definition, one that describes @italic{how to} calculate the function.
-In other words we need an @italic{imperative} definition.
+But for a computer we need different kind of definition, one that describes @italic{how to} calculate the function.
+In other words, we need an @italic{imperative} definition.
 
 Here is an imperative or how-to definition:
 @codeblock{
 0! = 1
-n! = n x (n-1)!, if n>0
+n! = n × (n-1)!, if n>0
 }
 
 Let us calculate 2!:
 
 @codeblock{
-2! = 2 x (2-1)! = 2 x 1! =
-     2 x (1 x (1 - 1)!) =
-     2 x 1 x 0! =
-     2 x 1 x 1 = 6
+2! = 2 × (2-1)! = 2 × 1! =
+     2 × (1 × (1 - 1)!) =
+     2 × 1 × 0! =
+     2 × 1 × 1 = 2
 }
 
 👉 Can you tell where each of the rules of the definition is being used?
@@ -290,13 +292,13 @@ So:
 After the first year we receive some interest which is added to the balance:
 
 @codeblock{
-ending-balance = starting-balance + starting-balance x interest-rate/100
+ending-balance = starting-balance + starting-balance × interest-rate/100
 }
 
 Let us make that a little simpler:
 
 @codeblock{
-ending-balance = starting-balance x (1 + interest-rate/100)
+ending-balance = starting-balance × (1 + interest-rate/100)
 }
 
 Translated into Lisp:
@@ -337,6 +339,165 @@ All in all, we have:
 👉 Test the function: Does it work for all of the examples we calculated above?
 
 👉 How long does it take to double your money with 10% interest rate?
+
+@section{Recursion on Strings}
+
+@subsection{Reversing a String}
+
+Let us use our knowledge of recursion to see how we can solve a problem using a String.
+We would like to make a function that reverses a String, meaning spell a word backwards:
+@codeblock{
+(backwards "He") -> "eH"
+(backwards "Racecar") -> "racecaR"
+}
+
+Let us start by making some observations: What are the simplest examples we can come up with? Well, the shorter the String, the less work we have to do. So:
+@codeblock{
+(backwards "a") -> "a"
+(backwards "z") -> "z"
+}
+
+Can we create something shorter? Yes, the "empty String":
+@codeblock{
+(backwards "") -> ""
+}
+
+In all of these cases, the return value is the same as the input value,
+so we do not need to do any processing.
+We can program that directly:
+@codeblock{
+(define (backwards word)
+  word
+)
+}
+
+This only works for String of length 0 or 1.
+When we include the condition for when we can use this simple implementation, we have:
+@codeblock{
+(define (backwards word)
+  (if (<= (string-length word) 1)
+          word
+          ...
+  )
+)
+}
+Let us look at something a little more involved: What if the word has two characters?
+
+@codeblock{
+(backwards "ab") -> "ba"
+}
+
+The observation to make here is that the first letter becomes the last letter,
+and the last letter becomes the first letter.
+We can implement that with:
+
+@codeblock{
+(define (backwards word)
+  (if (<= (string-length word) 1)
+          word
+          (string-append
+              (string-ith word 1) ; last letter
+              (string-ith word 0) ; first letter
+          )
+  )
+)
+}
+
+Now we have to look at longer Strings. Let us look at three letters:
+
+@codeblock{
+(backwards "abc") -> "cba"
+}
+
+It is still true that the first letter becomes the last, and the last letter becomes the first.
+Our current implementation returns:
+
+@codeblock{
+(backwards "abc") -> "ba"
+}
+
+so we are loosing a letter (the last). Let us see if we can get it back:
+
+@codeblock{
+(define (backwards word)
+  (if (<= (string-length word) 1)
+          word
+          (string-append (string-ith word 2) ; last letter
+                         (substring word 0 2); first part of the word
+          )
+  )
+)
+}
+
+which gives us:
+
+@codeblock{
+(backwards "abc") -> "cab"
+}
+
+Let us try that with a four letter word:
+@codeblock{
+(backwards "abcd") -> "cab"
+}
+
+The @code{"d"} is missing,
+and that is because @code{(string-ith word 2)} is not the last letter in @code{"abcd"}.
+The last letter has index @code{(- (string-length word) 1)}; one less that the length because
+the indices start at 0.
+So in our implementation, we replace @code{2} with the index of the last letter:
+@codeblock{
+(define (backwards word)
+  (if (<= (string-length word) 1)
+      word
+      (string-append
+       (string-ith word (- (string-length word) 1))   ; the last letter
+       (substring word 0 (- (string-length word) 1))  ; all the letters before the last
+      )
+  )
+)
+}
+
+which gives us:
+@codeblock{
+(backwards "abcd") -> "dabc"
+}
+
+All the letters are there, but the last letters are in the wrong order.
+
+👉 What order are they in? What order do we want them in?
+
+So all we have to do is reverse the last letters.
+Do we have a function that can reverse letters? We do if we believe we do...
+
+In this example, we can use @code{(backwards "abc")},
+which in general is: @code{(backwards (substring word 0 (- (string-length word) 1)))}
+
+Let us use it on the last letters:
+@codeblock{
+(define (backwards word)
+  (if (<= (string-length word) 1)
+      word
+      (string-append
+       (string-ith word (- (string-length word) 1))               ; the last letter
+       (backwards (substring word 0 (- (string-length word) 1)))  ; reverse the letters before the last
+      )
+  )
+)
+}
+
+👉 And now the function works on Strings of any length; try it for yourself.
+
+There were two tricks we used to implement this function:
+
+@itemlist[#:style 'unordered
+          @item{Find the simplest or smallest examples and use them as starting point.
+           This is known as the @italic{base case} and is used to stop the recursion.}
+          @item{Find a way to break down the problem into smaller problems
+           that we can call on the function to handle and then combine the results to a full solution.
+          This is known as the @italic{recursive case}.}
+]
+
+
 
 @section{Recursion with Images}
 
@@ -766,160 +927,6 @@ To have green leaves, we can use:
 
 @section{Advanced Problem-Solving}
 
-@subsection{An Example on String}
-
-Let us use our knowledge of recursion to see how we can solve a problem using a String.
-We would like to make a function that reverses a String, meaning spell a word backwards:
-@codeblock{
-(backwards "He") -> "eH"
-(backwards "Racecar") -> "racecaR"
-}
-
-Let us start by making some observations: What are the simplest examples we can come up with? Well, the shorter the String, the less work we have to do. So:
-@codeblock{
-(backwards "a") -> "a"
-(backwards "z") -> "z"
-}
-
-Can we create somethig shorter? Yes, the "empty String":
-@codeblock{
-(backwards "") -> ""
-}
-
-In all of these cases, the return value is the same as the input value,
-so we do not need to do any processing.
-We can program that directly:
-@codeblock{
-(define (backwards word)
-  word
-)
-}
-
-This only works for String of length 0 or 1.
-When we include the condition for when we can use this simple implementation, we have:
-@codeblock{
-(define (backwards word)
-  (if (<= (string-length word) 1)
-          word
-          ...
-  )
-)
-}
-Let us look at something a little more involved: What if the word has two characters?
-
-@codeblock{
-(backwards "ab") -> "ba"
-}
-
-The observation to make here is that the first letter becomes the last letter,
-and the last letter becomes the first letter.
-We can implement that with:
-
-@codeblock{
-(define (backwards word)
-  (if (<= (string-length word) 1)
-          word
-          (string-append
-              (string-ith word 1) ; last letter
-              (string-ith word 0) ; first letter
-          )
-  )
-)
-}
-
-Now we have to look at longer Strings. Let us look at three letters:
-
-@codeblock{
-(backwards "abc") -> "cba"
-}
-
-It is still true that the first letter becomes the last, and the last letter becomes the first.
-Our current implementation returns:
-
-@codeblock{
-(backwards "abc") -> "ba"
-}
-
-so we are loosing a letter (the last). Let us see if we can get it back:
-
-@codeblock{
-(define (backwards word)
-  (if (<= (string-length word) 1)
-          word
-          (string-append (string-ith word 2) ; last letter
-                         (substring word 0 2); first part of the word
-          )
-  )
-)
-}
-
-which gives us:
-
-@codeblock{
-(backwards "abc") -> "cab"
-}
-
-Let us try that with a four letter word:
-@codeblock{
-(backwards "abcd") -> "cab"
-}
-
-The @code{"d"} is missing,
-and that is because @code{(string-ith word 2)} is not the last letter in @code{"abcd"}.
-The last letter has index @code{(- (string-length word) 1)}; one less that the length because
-the indices start at 0.
-So in our implementation, we replace @code{2} with the index of the last letter:
-@codeblock{
-(define (backwards word)
-  (if (<= (string-length word) 1)
-      word
-      (string-append
-       (string-ith word (- (string-length word) 1))   ; the last letter
-       (substring word 0 (- (string-length word) 1))  ; all the letters before the last
-      )
-  )
-)
-}
-
-which gives us:
-@codeblock{
-(backwards "abcd") -> "dabc"
-}
-
-All the letters are there, but the last letters are in the wrong order.
-
-👉 What order are they in? What order do we want them in?
-
-So all we have to do is reverse the last letters.
-Do we have a function that can reverse letters? We do if we believe we do...
-
-In this example, we can use @code{(backwards "abc")},
-which in general is: @code{(backwards (substring word 0 (- (string-length word) 1)))}
-
-Let us use it on the last letters:
-@codeblock{
-(define (backwards word)
-  (if (<= (string-length word) 1)
-      word
-      (string-append
-       (string-ith word (- (string-length word) 1))               ; the last letter
-       (backwards (substring word 0 (- (string-length word) 1)))  ; reverse the letters before the last
-      )
-  )
-)
-}
-
-👉 And now the function works on Strings of any length; try it for yourself.
-
-There were two tricks we used to implement this function:
-
-@itemlist[#:style 'unordered
-          @item{Find the simplest or smallest examples and use them as starting point.
-           This is known as the @italic{base case} and is used to stop the recursion.}
-          @item{Find a way to break down the problem into smaller problems
-           that we can call on the function to handle and then combine the results to a full solution.
-          This is known as the @italic{recursive case}.}
-]
 
 
 
