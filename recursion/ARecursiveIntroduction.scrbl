@@ -24,18 +24,19 @@ Similarly, to reach the third step, you have to get to the second step first, wh
 With each next step, you are adding previous steps as a repeated sequence with a common difference between each step.
 Put differently:
 
-A step + ground floor ↦ Step 1
+On ground floor + A step up ↦ On step 1
 
-A step + Step 1 ↦ Step 2
+On step 1 + A step up ↦ On step 2
 
-A step + Step 2 ↦ Step 3
+On step 2 + A step up ↦ On Step 3
 
 And so on:
 
-A step + Step n ↦ Step n+1
+On step n + A step up ↦ On step n+1
 
-So if we want to get to Step 4 all we have to do is take a step up from Step 4-1 = Step 3.
+So if we want to get to Step 4 all we have to do is to take a step up from Step 4-1 = Step 3.
 How do you get to Step 3? Just take a step up from Step 3-1 = Step 2. And so on.
+Note that in each situation we use the same process: Take A step up.
 
 This is the basic idea of a recursive process.
 
@@ -125,22 +126,24 @@ similar to a Matryoshka or nesting doll; see @url{https://en.wikipedia.org/wiki/
 
 We will start by "nesting" squares:
 @codeblock{
+(require 2htdp/image)
+           
 (define (nest iterations)
-  (if (= iterations 0)
-      (square (* iterations 25) "solid" "orange")
-      (above ; composition
+  (if (= iterations 1)
+      ; Base case
+      (square 25 "solid" "gray")
+      ; Recursive case
+      (above ; Composition
        (nest (- iterations 1))
-       (square (* iterations 25) "outline" "black")
+       (square (* iterations 25) "outline" "gray")
       )
   )
 )
 }
 
-👉 What does @code{(nest 4)} produce? Can you tell when the base case is evaluated?
+👉 What does @code{(nest 5)} produce? Can you tell when the base case is evaluated?
 
 Maybe that does not really look like nesting?
-
-👉 Replace the composition with @code{beside}. Does that look like nesting?
 
 👉 Try @code{overlay}.
 
@@ -292,7 +295,8 @@ So:
 After the first year we receive some interest which is added to the balance:
 
 @codeblock{
-ending-balance = starting-balance + starting-balance × interest-rate/100
+ending-balance = starting-balance + interest
+               = starting-balance + starting-balance × interest-rate/100
 }
 
 Let us make that a little simpler:
@@ -312,7 +316,7 @@ Translated into Lisp:
 )
 }
 
-This only works for the first year.
+This only works for the first year (one period).
 
 Here is the corner-stone of this case:
 The starting balance of a year is the ending balance of the prevous year.
@@ -351,13 +355,14 @@ We would like to make a function that reverses a String, meaning spell a word ba
 (backwards "Racecar") -> "racecaR"
 }
 
-Let us start by making some observations: What are the simplest examples we can come up with? Well, the shorter the String, the less work we have to do. So:
+Let us start by making some observations: What are the simplest examples we can come up with?
+Well, the shorter the String, the less work we have to do. So:
 @codeblock{
 (backwards "a") -> "a"
 (backwards "z") -> "z"
 }
 
-Can we create something shorter? Yes, the "empty String":
+Can we create something shorter? Yes, the String with no characters, the empty String:
 @codeblock{
 (backwards "") -> ""
 }
@@ -371,7 +376,7 @@ We can program that directly:
 )
 }
 
-This only works for String of length 0 or 1.
+This only works for Strings of length 0 or 1.
 When we include the condition for when we can use this simple implementation, we have:
 @codeblock{
 (define (backwards word)
@@ -389,15 +394,27 @@ Let us look at something a little more involved: What if the word has two charac
 
 The observation to make here is that the first letter becomes the last letter,
 and the last letter becomes the first letter.
-We can implement that with:
+
+Let us make functions for that:
+@codeblock{
+(define (first-letter word)
+   (string-ith word 0)
+)
+
+(define (last-letter word)
+   (string-ith word (- (string-length word) 1))
+)
+}
+
+Using these functions, we have:
 
 @codeblock{
 (define (backwards word)
   (if (<= (string-length word) 1)
           word
           (string-append
-              (string-ith word 1) ; last letter
-              (string-ith word 0) ; first letter
+              (last-letter word)
+              (first-letter word)
           )
   )
 )
@@ -413,17 +430,27 @@ It is still true that the first letter becomes the last, and the last letter bec
 Our current implementation returns:
 
 @codeblock{
-(backwards "abc") -> "ba"
+(backwards "abc") -> "ca"
 }
 
-so we are loosing a letter (the last). Let us see if we can get it back:
+so we are losing a letter. The problem is that we are only including the first letter, not all the letters after the first letter.
+
+Let us make a function for that:
+@codeblock{
+(define (rest-letters word)
+   ; Exclude the 0th letter
+   (substring word 1 (string-length word))
+)
+}
+
+So now we can do:
 
 @codeblock{
 (define (backwards word)
   (if (<= (string-length word) 1)
           word
-          (string-append (string-ith word 2) ; last letter
-                         (substring word 0 2); first part of the word
+          (string-append (rest-letters word)
+                         (first-letter word)
           )
   )
 )
@@ -432,77 +459,53 @@ so we are loosing a letter (the last). Let us see if we can get it back:
 which gives us:
 
 @codeblock{
-(backwards "abc") -> "cab"
+(backwards "abc") -> "bca"
 }
 
-Let us try that with a four letter word:
-@codeblock{
-(backwards "abcd") -> "cab"
-}
+All the letters are there, but the first letters are not in the right order.
 
-The @code{"d"} is missing,
-and that is because @code{(string-ith word 2)} is not the last letter in @code{"abcd"}.
-The last letter has index @code{(- (string-length word) 1)}; one less that the length because
-the indices start at 0.
-So in our implementation, we replace @code{2} with the index of the last letter:
+👉 What order are they in? What order do we want them in? Do we have a function that can get them in the desired order? (leap-of-faith)
+
+All we need is a recursive call:
+
 @codeblock{
 (define (backwards word)
   (if (<= (string-length word) 1)
-      word
-      (string-append
-       (string-ith word (- (string-length word) 1))   ; the last letter
-       (substring word 0 (- (string-length word) 1))  ; all the letters before the last
-      )
+          word
+          (string-append (backwards (rest-letters word))
+                         (first-letter word)
+          )
   )
 )
 }
 
 which gives us:
 @codeblock{
-(backwards "abcd") -> "dabc"
+(backwards "abc") -> "cba"
+(backwards "abcd") -> "dcba"
 }
 
-All the letters are there, but the last letters are in the wrong order.
-
-👉 What order are they in? What order do we want them in?
-
-So all we have to do is reverse the last letters.
-Do we have a function that can reverse letters? We do if we believe we do...
-
-In this example, we can use @code{(backwards "abc")},
-which in general is: @code{(backwards (substring word 0 (- (string-length word) 1)))}
-
-Let us use it on the last letters:
-@codeblock{
-(define (backwards word)
-  (if (<= (string-length word) 1)
-      word
-      (string-append
-       (string-ith word (- (string-length word) 1))               ; the last letter
-       (backwards (substring word 0 (- (string-length word) 1)))  ; reverse the letters before the last
-      )
-  )
-)
-}
-
-👉 And now the function works on Strings of any length; try it for yourself.
+👉 Can you convince yourself that this works for strings of any length?
 
 There were two tricks we used to implement this function:
 
 @itemlist[#:style 'unordered
           @item{Find the simplest or smallest examples and use them as starting point.
-           This is known as the @italic{base case} and is used to stop the recursion.}
+           These are the @italic{base cases} and is used to stop the recursion.
+          In this case it is the Strings with zero or one character.}
           @item{Find a way to break down the problem into smaller problems
-           that we can call on the function to handle and then combine the results to a full solution.
-          This is known as the @italic{recursive case}.}
+           that we can call on the function to handle and then combine (compose) the results into a full solution.
+          This is the @italic{recursive case}.
+          In this function the composition is @code{string-append.}}
 ]
 
-
+The recursion works because each time we call the function recursively we make steps towards termination
+because each time the String becomes shorter.
 
 @section{Recursion with Images}
 
 To use recursion with images we have to use different operators than with numbers.
-With numbers we have used + and *, but with images we have to use combinators,
+With numbers we have used + and *, with Strings @code{string-append}, but with images we have to use combinators,
 such as @code{above}, @code{beside}, @code{overlay}, etc.
 
 @subsection{Modern Art: Recursive Mondrian}
@@ -529,21 +532,26 @@ so that we can color the rectangles differently as we move through the iteration
 )
 }
 
-Then we need a function that can create the building blocks of the picture:
+To get a random color we can use @code{(get-color (random 4))}.
+
+Now we need a function that can create the building blocks of the picture:
 
 @codeblock{
-(define border-width 5)
+(define frame-width 5)
 
+; Purpose: Given a width and an height, create a rectangle of the given dimensions and a random color which includes a border frame
 (define (mondrian-box width height)
   (overlay
-   (rectangle (- width border-width) (- height border-width) "solid" (get-color (random 4)))
-   (rectangle width height "solid" "black") ; black frame
+   ; Inside color box
+   (rectangle (- width frame-width) (- height frame-width) "solid" (get-color (random 4)))
+   ; Black frame
+   (rectangle width height "solid" "black")
    )
 )
 }
 
 The idea we are going to use is that we will start with a rectangle of given dimensions and
-subdivide it a given number of times. Here is a template:
+subdivide it a given number of times (iterations). Here is a template:
 
 @codeblock{
 (define (mondrian iterations width height)
@@ -576,14 +584,14 @@ the original dimensions:
 
 👉 Try: @code{(mondrian 3 300 300)} and @code{(mondrian 5 300 300)}
 
-We are not quite there, somehow we have to subdivide horizontally some of the time.
-We can use the @code{random} function for that:
+We also want to subdivide vertically some of the time.
+We can use @code{(random 2)}, which randomly return 0 or 1, for that:
 
 @codeblock{
 (define (mondrian iterations width height)
   (cond
     ((= iterations 0) (mondrian-box width height))
-    ((= (random 2) 0)
+    ((= (random 2) 0) 
      ...
     )
     (else
@@ -626,13 +634,26 @@ If we want to be really artistic the image has to have the Golden ratio:
 }
 
 👉 Run the function many times until you find a picture you like.
-Marvel in it because next time you run the program you will likely get something different.
+Marvel in it because next time you run the program you will likely get something completely different.
 
 👉 Try changing the colors.
 
 👉 Try a different subdivision in one or both dimensions.
 
 👉 Try varying the number of iterations in each subdivision, maybe randomly?
+
+👉 Want to save an image? use @code{(save-image (mondrian 3 300 300) "mondrian.png")}
+
+Caveat: Sometimes when you use many iterations, the divisions return number that are not integers.
+If you encounter this, you can use the @code{truncate}-function:
+@codeblock{
+...
+(truncate (/ height 2))...
+...
+(truncate (/ width 2))...
+...
+}
+to discard digits after the decimal point.
 
 @subsubsection{Mondrians in the Real World}
 
